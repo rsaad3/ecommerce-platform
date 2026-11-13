@@ -1,0 +1,48 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: inventory-service
+  profiles:
+    active: local
+
+  app:
+    environment: local
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/inventory_db
+    username: postgres
+    password: Ted@0100
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: false
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  logstash:
+    destination: ${LOGSTASH_DESTINATION:localhost:5000}
+  level:
+    com.ecommerce.inventory: INFO
+    org.hibernate.SQL: DEBUG

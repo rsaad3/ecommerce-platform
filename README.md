@@ -1,49 +1,73 @@
 
 # E-Commerce Microservices Platform
 
-A practical E-Commerce Microservices project built
-using Java 17, Spring Boot, Docker Compose, PostgreSQL,
-Apache Kafka, and ELK Stack.
+Version: 2.0
 
-## 1. Architecture
+A microservices-based E-Commerce application built using
+Java 17, Spring Boot, PostgreSQL, Docker Compose, Kafka,
+Spring Cloud Gateway, and ELK Stack.
 
-The platform consists of the following services:
+---
+
+## 1. Project Overview
+
+The platform is designed using independent microservices.
+
+Each service owns its business logic and its own database.
+
+### Planned Microservices
 
 - Customer Service
+- Inventory Service
 - Order Service
 - Payment Service
-- Inventory Service
 - Notification Service
-- API Gateway (Spring Cloud Gateway)
+- API Gateway
 
-Infrastructure:
+### Architecture Principles
 
-- PostgreSQL
-- Apache Kafka
-- Elasticsearch
-- Logstash
-- Kibana
-- Docker Compose
+- Microservices Architecture
+- Database per Service
+- REST APIs for synchronous communication
+- Kafka for asynchronous communication
+- Centralized Logging
+- Independent Service Deployment
+- DTO-based API contracts
+- Transaction Management
+- Idempotent Operations
+- Concurrency Control
+
+---
 
 ## 2. Technology Stack
 
-| Technology | Version |
+| Technology | Version / Purpose |
 |---|---|
 | Java | 17 |
 | Spring Boot | 3.5.7 |
 | Spring Cloud | 2025.0.0 |
 | Maven | 3.9+ |
 | PostgreSQL | 17 |
-| Apache Kafka | 3.9.1 |
+| Kafka | 3.9.1 |
 | Elasticsearch | 8.17.0 |
 | Logstash | 8.17.0 |
 | Kibana | 8.17.0 |
 | Docker Compose | V2 |
+| Spring Data JPA | Persistence |
+| Hibernate | ORM |
+| Jakarta Validation | Request validation |
+| JUnit 5 | Unit testing |
+| Mockito | Mocking |
+
+---
 
 ## 3. Project Structure
 
 ```text
 ecommerce-platform/
+│
+├── pom.xml
+├── README.md
 │
 ├── infrastructure/
 │   ├── docker-compose.yml
@@ -59,151 +83,343 @@ ecommerce-platform/
 │       └── kibana.yml
 │
 ├── customer-service/
-├── order-service/
-├── payment-service/
-├── inventory-service/
-├── notification-service/
-├── api-gateway/
+│   ├── pom.xml
+│   └── src/
 │
-├── pom.xml
-└── README.md
+├── inventory-service/
+│   ├── pom.xml
+│   └── src/
+│       └── main/
+│           ├── java/com/ecommerce/inventory/
+│           │   ├── controller/
+│           │   ├── dto/
+│           │   ├── entity/
+│           │   ├── exception/
+│           │   ├── filter/
+│           │   ├── repository/
+│           │   ├── service/
+│           │   └── InventoryServiceApplication.java
+│           │
+│           └── resources/
+│               ├── application.yml
+│               └── logback-spring.xml
+│
+├── order-service/
+│
+├── payment-service/
+│
+├── notification-service/
+│
+└── api-gateway/
 ```
 
+---
 
-## 4. Database Design
-
-PostgreSQL databases:
-
-- customer_db
-- order_db
-- payment_db
-- inventory_db
-- notification_db
+## 4. Database Architecture
 
 Each microservice owns its database.
+
+| Service | Database |
+|---|---|
+| Customer Service | customer_db |
+| Inventory Service | inventory_db |
+| Order Service | order_db |
+| Payment Service | payment_db |
+| Notification Service | notification_db |
+
+Services must not directly access another service's database.
+
+Communication should happen through APIs or events.
+
+---
 
 ## 5. Infrastructure Ports
 
 | Component | Port |
-|---|---|
+|---|---:|
+| API Gateway | 8080 |
+| Customer Service | 8081 |
+| Order Service | 8082 |
+| Payment Service | 8083 |
+| Notification Service | 8084 |
+| Inventory Service | 8085 |
 | PostgreSQL | 5432 |
 | Kafka External | 9092 |
 | Kafka Internal | 29092 |
 | Elasticsearch | 9200 |
 | Logstash TCP | 5000 |
 | Kibana | 5601 |
-| Customer Service | 8081 |
 
-## 6. Start Infrastructure
+---
 
-Navigate to the project root.
+## 6. Running Infrastructure
 
-Run:
+Start infrastructure:
 
-docker compose -f infrastructure/docker-compose.yml up -d
+```bash
+docker compose \
+-f infrastructure/docker-compose.yml \
+up -d
+```
 
 Check containers:
 
-docker compose -f infrastructure/docker-compose.yml ps
+```bash
+docker compose \
+-f infrastructure/docker-compose.yml \
+ps
+```
 
 View logs:
 
-docker compose -f infrastructure/docker-compose.yml logs -f
+```bash
+docker compose \
+-f infrastructure/docker-compose.yml \
+logs -f
+```
 
-## 7. Run Customer Service
+---
 
-Build:
+## 7. Customer Service
 
+Customer Service manages customer information.
+
+Implemented features:
+
+- Create Customer
+- Get Customer by ID
+- Get Customers with Pagination
+- Update Customer
+- Delete Customer
+- DTO Mapping
+- Bean Validation
+- Global Exception Handling
+- Duplicate Email Protection
+- PostgreSQL Persistence
+- Transaction Management
+- Correlation ID Logging
+
+### Customer Endpoints
+
+| Method | Endpoint |
+|---|---|
+| POST | /api/customers |
+| GET | /api/customers/{id} |
+| GET | /api/customers?page=0&size=10 |
+| PUT | /api/customers/{id} |
+| DELETE | /api/customers/{id} |
+
+### Run Customer Service
+
+```bash
 mvn -pl customer-service clean package
+```
 
-Run:
-
+```bash
 mvn -pl customer-service spring-boot:run
-
-Customer Service URL:
-
-http://localhost:8081
+```
 
 Health Check:
 
+```text
 http://localhost:8081/actuator/health
+```
 
-## 8. Customer APIs
+---
 
-Base URL:
+## 8. Inventory Service
 
-http://localhost:8081/api/customers
+Inventory Service manages product stock and reservations.
 
-Create Customer:
+Implemented features:
 
-POST /api/customers
+- Create Inventory Item
+- Get Inventory
+- Add Stock
+- Reserve Stock
+- Confirm Reservation
+- Release Reservation
+- Reservation Status Management
+- Idempotent Reservation Requests
+- Atomic PostgreSQL Updates
+- Optimistic Locking with @Version
+- Prevent Negative Inventory
+- Transaction Management
+- Correlation ID Logging
+- Unit Tests with Mockito
 
-Get Customer:
+### Inventory Data Model
 
-GET /api/customers/{id}
+Inventory Item:
 
-Get All Customers:
+- productId
+- sku
+- availableQuantity
+- reservedQuantity
+- version
+- createdAt
+- updatedAt
 
-GET /api/customers?page=0&size=10
+Inventory Reservation:
 
-Update Customer:
+- reservationId
+- orderId
+- productId
+- quantity
+- status
+- createdAt
+- updatedAt
 
-PUT /api/customers/{id}
+### Reservation States
 
-Delete Customer:
+- RESERVED
+- CONFIRMED
+- RELEASED
 
-DELETE /api/customers/{id}
+### Inventory Endpoints
 
-## 9. Logging Architecture
+| Method | Endpoint |
+|---|---|
+| POST | /api/inventory/items |
+| GET | /api/inventory/items/{productId} |
+| POST | /api/inventory/items/{productId}/stock |
+| PUT | /api/inventory/reservations/{reservationId} |
+| GET | /api/inventory/reservations/{reservationId} |
+| POST | /api/inventory/reservations/{reservationId}/confirm |
+| POST | /api/inventory/reservations/{reservationId}/release |
 
-Spring Boot
-|
-v
-SLF4J
-|
-v
-Logback
-|
-v
-Logstash TCP Appender
-|
-v
-Logstash
-|
-v
-Elasticsearch
-|
-v
-Kibana
+### Run Inventory Service
 
-Kibana:
+```bash
+mvn -pl inventory-service -am clean package
+```
 
-http://localhost:5601
+```bash
+java -jar inventory-service/target/inventory-service-1.0.0.jar
+```
 
-Elasticsearch:
+Health Check:
 
-http://localhost:9200
+```text
+http://localhost:8085/actuator/health
+```
 
-Data View:
+---
 
-ecommerce-logs-*
+## 9. Inventory Test Examples
 
-Correlation Header:
+Create Inventory:
 
-X-Correlation-Id
+```http
+POST http://localhost:8085/api/inventory/items
+```
 
-## 10. Kafka
+```json
+{
+  "productId": 1001,
+  "sku": "SKU-1001",
+  "initialQuantity": 10
+}
+```
 
-Kafka Bootstrap Servers:
+Reserve Stock:
 
+```http
+PUT http://localhost:8085/api/inventory/reservations/11111111-1111-1111-1111-111111111111
+```
+
+```json
+{
+  "orderId": "22222222-2222-2222-2222-222222222222",
+  "productId": 1001,
+  "quantity": 3
+}
+```
+
+Confirm Reservation:
+
+```http
+POST http://localhost:8085/api/inventory/reservations/11111111-1111-1111-1111-111111111111/confirm
+```
+
+Release Reservation:
+
+```http
+POST http://localhost:8085/api/inventory/reservations/11111111-1111-1111-1111-111111111111/release
+```
+
+---
+
+## 10. Running Tests
+
+Run Customer Service tests:
+
+```bash
+mvn -pl customer-service test
+```
+
+Run Inventory Service tests:
+
+```bash
+mvn -pl inventory-service -am test
+```
+
+Build the implemented modules:
+
+```bash
+mvn -pl customer-service,inventory-service -am clean package
+```
+
+---
+
+## 11. PostgreSQL Access
+
+Connect to PostgreSQL:
+
+```bash
+docker exec -it ecommerce-postgres \
+psql -U ecommerce -d inventory_db
+```
+
+List tables:
+
+```sql
+\dt
+```
+
+Check Inventory:
+
+```sql
+SELECT * FROM inventory_items;
+```
+
+Check Reservations:
+
+```sql
+SELECT * FROM inventory_reservations;
+```
+
+---
+
+## 12. Kafka
+
+Kafka is configured in the infrastructure layer.
+
+External bootstrap server:
+
+```text
 localhost:9092
+```
 
-Docker Internal Address:
+Internal bootstrap server:
 
+```text
 kafka:29092
+```
 
-Create Topic:
+Create a sample topic:
 
+```bash
 docker exec -it ecommerce-kafka \
 /opt/kafka/bin/kafka-topics.sh \
 --bootstrap-server localhost:9092 \
@@ -211,70 +427,126 @@ docker exec -it ecommerce-kafka \
 --topic order-created \
 --partitions 3 \
 --replication-factor 1
+```
 
-## 11. Testing
+Kafka application event integration is planned for a later stage.
 
-Check PostgreSQL:
+---
 
-docker exec -it ecommerce-postgres \
-psql -U ecommerce -d customer_db
+## 13. Centralized Logging
 
-Check Kafka:
+The logging pipeline:
 
-docker exec -it ecommerce-kafka \
-/opt/kafka/bin/kafka-topics.sh \
---bootstrap-server localhost:9092 --list
+```text
+Microservices
+     |
+     v
+ Logback
+     |
+     v
+ Logstash
+     |
+     v
+Elasticsearch
+     |
+     v
+  Kibana
+```
 
-Check Elasticsearch:
+Kibana:
 
-curl http://localhost:9200/_cluster/health?pretty
+```text
+http://localhost:5601
+```
 
-Check Customer Service:
+Elasticsearch:
 
-curl http://localhost:8081/actuator/health
+```text
+http://localhost:9200
+```
 
-## 12. Implemented Features
+Logstash TCP:
 
-- Initial Maven Multi-Module structure.
-- Java 17 and Spring Boot setup.
-- Docker Compose infrastructure.
-- PostgreSQL database initialization.
-- Kafka KRaft broker.
-- Elasticsearch, Logstash, Kibana.
-- Centralized JSON Logging configuration.
-- Correlation ID using MDC.
-- Customer Entity and DTOs.
-- Customer Repository.
-- Customer Business Service.
-- Customer CRUD REST APIs.
-- Pagination.
-- Bean Validation.
-- Global Exception Handling.
+```text
+localhost:5000
+```
 
-## 13. Development Roadmap
+Recommended Data View:
 
-1. Complete Customer Service testing.
-2. Add Flyway database migrations.
-3. Implement Inventory Service.
-4. Implement Order Service.
-5. Implement Payment Service.
-6. Implement Notification Service.
-7. Integrate Apache Kafka.
-8. Implement Spring Cloud Gateway.
-9. Add Distributed Tracing.
-10. Add Resilience4j.
-11. Add OAuth2 and Keycloak.
-12. Add Integration Tests.
-13. Complete End-to-End testing.
+```text
+ecommerce-logs-*
+```
 
-## 14. Environment Notes
+Use the X-Correlation-Id header to trace requests.
 
-The current configuration is intended for local
-development and learning.
+---
 
-Do not use the development credentials or disabled
-Elasticsearch security settings in production.
+## 14. Implemented Features
 
-Production deployments should use secure credentials,
-TLS, database migrations, health checks, and
-appropriate resource limits.
+- [x] Project Maven structure
+- [x] Docker infrastructure
+- [x] PostgreSQL databases
+- [x] Kafka infrastructure
+- [x] Elasticsearch
+- [x] Logstash
+- [x] Kibana
+- [x] Customer Service CRUD implementation
+- [x] Customer validation and exception handling
+- [x] Inventory Service implementation
+- [x] Stock reservation
+- [x] Reservation confirmation and release
+- [x] Idempotency for reservations
+- [x] Atomic stock updates
+- [x] Optimistic locking
+- [x] Inventory unit test examples
+
+---
+
+## 15. Development Roadmap
+
+1. Complete Customer Service practical testing.
+2. Complete Inventory Service practical testing.
+3. Add PostgreSQL Testcontainers integration tests.
+4. Add Flyway migrations.
+5. Build Order Service.
+6. Integrate Order Service with Inventory Service.
+7. Build Payment Service.
+8. Build Notification Service.
+9. Integrate Kafka producers and consumers.
+10. Implement Saga Pattern.
+11. Implement Transactional Outbox.
+12. Build Spring Cloud Gateway.
+13. Add distributed tracing.
+14. Add Resilience4j.
+15. Add OAuth2 / Keycloak security.
+16. Add end-to-end integration tests.
+
+---
+
+## 16. Current Development Status
+
+Completed in the lessons:
+
+- Infrastructure setup.
+- Customer Service CRUD implementation.
+- Inventory Service stock and reservation implementation.
+
+Next step:
+
+Build Order Service and integrate it with Customer and Inventory Services.
+
+---
+
+## 17. Environment and Security Notes
+
+The database credentials in application.yml are for local development only.
+
+For production:
+
+- Use environment variables or a secrets manager.
+- Use Flyway database migrations.
+- Do not expose internal databases publicly.
+- Secure Actuator endpoints.
+- Configure TLS.
+- Add authentication and authorization.
+- Configure production logging and monitoring.

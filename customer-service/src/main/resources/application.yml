@@ -5,11 +5,16 @@ server:
 spring:
   application:
     name: customer-service
+  profiles:
+    active: local
+
+  app:
+    environment: local
 
   datasource:
     url: jdbc:postgresql://localhost:5432/customer_db
-    username: ecommerce
-    password: ecommerce123
+    username: postgres
+    password: Ted@0100
 
   jpa:
     hibernate:
