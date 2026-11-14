@@ -1,0 +1,46 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: order-service
+  profiles:
+    active: local
+
+  app:
+    environment: local
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_db
+    username: ecommerce
+    password: ecommerce123
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  logstash:
+    destination: ${LOGSTASH_DESTINATION:localhost:5000}
+
+  level:
+    root: INFO
+    com.ecommerce.customer: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+  endpoint:
+    health:
+      show-details: always
+
+inventory:
+    service:
+      url: http://localhost:8082
